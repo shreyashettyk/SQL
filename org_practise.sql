@@ -1,38 +1,38 @@
-create database org;
+CREATE database org;
 use org;
 source  org.sql;
 
 
-/*Q-1. Write an SQL query to fetch “FIRST_NAME” FROM Worker table using the alias name as <WORKER_NAME>.*/
+/*Q-1. Write an SQL query to fetch “FIRST_NAME” FROM Worker TABLE using the alias name as <WORKER_NAME>.*/
 
 SELECT FIRST_NAME AS WORKER_NAME FROM worker;
 
-/*2. Write an SQL query to fetch “FIRST_NAME” FROM Worker table in upper case.*/
+/*2. Write an SQL query to fetch “FIRST_NAME” FROM Worker TABLE in upper case.*/
 
 SELECT upper(FIRST_NAME) AS WORKER_NAME FROM worker;
 
-/*3. Write an SQL query to fetch unique values of DEPARTMENT FROM Worker table.*/
+/*3. Write an SQL query to fetch unique values of DEPARTMENT FROM Worker TABLE.*/
 
 SELECT distinct DEPARTMENT FROM worker;
 
-/*4. Write an SQL query to print the first three characters of  FIRST_NAME FROM Worker table.*/
+/*4. Write an SQL query to print the first three characters of  FIRST_NAME FROM Worker TABLE.*/
 
 SELECT substring(FIRST_NAME,1,3) FROM worker;
 
-/*5. Write an SQL query to find the position of the alphabet (‘a’) in the first name column ‘Amitabh’ FROM Worker table.*/
+/*5. Write an SQL query to find the position of the alphabet (‘a’) in the first name column ‘Amitabh’ FROM Worker TABLE.*/
 
 SELECT position('a' in FIRST_NAME) AS CHAR_POSITION FROM worker WHERE FIRST_NAME = 'Amitabh';
 
-/*6. Write an SQL query to print the FIRST_NAME FROM Worker table after removing white spaces FROM the right side.*/
+/*6. Write an SQL query to print the FIRST_NAME FROM Worker TABLE after removing white spaces FROM the right side.*/
 
 SELECT RTRIM(FIRST_NAME) FROM worker;
 
-/*7. Write an SQL query to print the DEPARTMENT FROM Worker table after removing white spaces FROM the left side.*/
+/*7. Write an SQL query to print the DEPARTMENT FROM Worker TABLE after removing white spaces FROM the left side.*/
 
 SELECT ltrim(DEPARTMENT) FROM worker;
 
 
-/*8. Write an SQL query that fetches the unique values of DEPARTMENT FROM Worker table and prints its length.*/
+/*8. Write an SQL query that fetches the unique values of DEPARTMENT FROM Worker TABLE and prints its length.*/
 SELECT  distinct LENGTH(DEPARTMENT) as NUMBER_OF_CHARACTERS FROM worker;
 
 
@@ -144,7 +144,8 @@ select *
 FROM worker 
 WHERE MOD(worker_id,2) = 0;
 
-/*28. Write an SQL query to clone a new table FROM another table.*/
+/*28. Write an SQL query to clone a new TABLE FROM another TABLE.*/
+CREATE TABLE workerclone as SELECT * FROM worker;
 
 /*29. Write an SQL query to fetch intersecting records of two tables.*/
 -- (select worker_id 
@@ -175,6 +176,40 @@ SELECT WORKER_ID,CONCAT_WS(' ',FIRST_NAME,LAST_NAME) AS FULLNAME FROM WORKER
 SELECT  max(SALARY) from worker order by SALARY 
 
 /*one way is to run two seperate queries . The second outcome will 
-be run based on the output seen from the first query*/
-select worker_id from worker order by salary desc;
-select worker_id, first_name , salary from worker where worker_id = 1;
+be run based on the output seen FROM the first query*/
+SELECT worker_id FROM worker ORDER BY salary desc;
+SELECT worker_id, first_name , salary FROM worker WHERE worker_id = 1;
+
+
+/*35. Write an SQL query to fetch the list of employees with the same salary.*/
+
+SELECT w.worker_id,w.salary,w.first_name FROM worker w, worker w1 WHERE w.salary=w1.salary and w.worker_id <> w1.worker_id;
+
+/*36. Write an SQL query to show the second highest salary FROM a TABLE.*/
+SELECT max(salary) FROM worker WHERE salary < (SELECT max(salary) FROM worker);
+
+/*39. Write an SQL query to fetch the first 50% records FROM a TABLE. */
+SELECT * FROM worker WHERE worker_id <= (SELECT count(worker.worker_id)/2 FROM worker);
+
+/**/
+
+/*40. Write an SQL query to fetch the departments that have less than five people in it.*/
+SELECT worker.department FROM worker GROUP BY(department) having count(*) < 5;
+
+/*41. Write an SQL query to show all departments along with the number of people in there.*/
+
+SELECT department,count(worker_id) as NUM_OF_EMP FROM worker GROUP BY department
+
+/*42. Write an SQL query to show the last record FROM a table.*/
+SELECT * FROM worker ORDER BY worker_id desc limit 1;
+
+/*43. Write an SQL query to fetch the first row of a table.*/
+SELECT * FROM worker ORDER BY worker_id asc limit 1;
+
+/*44. Write an SQL query to fetch the last five records FROM a table.*/
+
+SELECT * from worker order by worker_id desc limit 5;
+
+/*Write an SQL query to print the name of employees having the highest salary in each department.*/
+select first_name,salary,department from worker where salary in (select max(salary) from worker group by department);
+
