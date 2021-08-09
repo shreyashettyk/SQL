@@ -1,0 +1,1 @@
+Contains solved questions from the case study 1 of https://8weeksqlchallenge.com/case-study-1/
