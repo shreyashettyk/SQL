@@ -1,6 +1,8 @@
 create database zomato;
 
 use zomato;
+show tables;
+
 
 
 drop table if exists goldusers_signup;
@@ -134,8 +136,52 @@ order by userid) X ) Y
 where POP_ITEM = 1
 ;
 
+-- first item purchased by the customer after they became a gold member
+select * from goldusers_signup;
+create view v_goldusers_signup as
+select userid,str_to_date(gold_signup_date,'%m-%d-%Y') as gold_signup_date from goldusers_signup;
+select * from zomato_sales;
+
+select * from v_goldusers_signup;
+
+select min(gold_signup_date) from v_goldusers_signup;
 
 
+select * from (
+select *, rank() over (partition by userid order by sales_date asc) SALES_DATES from (
+select z.userid,z.product_id,z.sales_date,v.gold_signup_date
+from zomato_sales z join v_goldusers_signup v
+on z.userid = v.userid
+where z.sales_date > v.gold_signup_date ) X ) Y
+where SALES_DATES = 1;
 
+
+-- item purchased by the customer just before they became a gold member
+select * from (
+select *, rank() over (partition by userid order by sales_date desc) SALES_DATES from (
+select z.userid,z.product_id,z.sales_date,v.gold_signup_date
+from zomato_sales z join v_goldusers_signup v
+on z.userid = v.userid
+where z.sales_date < v.gold_signup_date ) X ) Y
+where SALES_DATES = 1;
+
+-- what is the total order and amount spent by each customer before they became a memeber
+
+select * from zomato_sales;
+
+select * from product;
+
+create view sales_price as 
+select z.*,p.price
+from zomato_sales z join product p 
+on z.product_id = p.product_id;
+
+
+select userid,count(*) as NUMBER_ORDERS,sum(price) as TOTAL_AMOUNT_BEFORE_GOLD from (
+select z.userid,z.product_id,z.sales_date,z.price,v.gold_signup_date
+from sales_price z join v_goldusers_signup v
+on z.userid = v.userid
+where z.sales_date < v.gold_signup_date ) X
+group by userid;
 
 
