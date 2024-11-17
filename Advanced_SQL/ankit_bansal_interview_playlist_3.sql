@@ -1,0 +1,84 @@
+-- https://www.youtube.com/watch?v=MpAMjtvarrc&list=PLBTZqjSKn0IeKBQDjLmzisazhqQy4iGkb&index=2
+
+-- https://www.youtube.com/watch?v=5kbuhoEw1Xg
+
+CREATE TABLE users (
+    USER_ID INT PRIMARY KEY,
+    USER_NAME VARCHAR(20) NOT NULL,
+    USER_STATUS VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE logins (
+    USER_ID INT,
+    LOGIN_TIMESTAMP DATETIME NOT NULL,
+    SESSION_ID INT PRIMARY KEY,
+    SESSION_SCORE INT,
+    FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID)
+);
+
+
+INSERT INTO USERS VALUES (1, 'Alice', 'Active');
+INSERT INTO USERS VALUES (2, 'Bob', 'Inactive');
+INSERT INTO USERS VALUES (3, 'Charlie', 'Active');
+INSERT INTO USERS  VALUES (4, 'David', 'Active');
+INSERT INTO USERS  VALUES (5, 'Eve', 'Inactive');
+INSERT INTO USERS  VALUES (6, 'Frank', 'Active');
+INSERT INTO USERS  VALUES (7, 'Grace', 'Inactive');
+INSERT INTO USERS  VALUES (8, 'Heidi', 'Active');
+INSERT INTO USERS VALUES (9, 'Ivan', 'Inactive');
+INSERT INTO USERS VALUES (10, 'Judy', 'Active');
+
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (1, '2024-01-10 07:45:00', 1011, 86);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (2, '2024-01-25 09:30:00', 1012, 89);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (3, '2024-02-05 11:00:00', 1013, 78);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (4, '2024-03-01 14:30:00', 1014, 91);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (5, '2024-03-15 16:00:00', 1015, 83);
+
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (6, '2024-04-12 08:00:00', 1016, 80);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (7, '2024-05-18 09:15:00', 1017, 82);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (8, '2024-05-28 10:45:00', 1018, 87);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (9, '2024-06-15 13:30:00', 1019, 76);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (10, '2024-06-25 15:00:00', 1010, 92);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (10, '2024-06-26 15:45:00', 1020, 93);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (10, '2024-06-27 15:00:00', 1021, 92);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (10, '2024-06-28 15:45:00', 1022, 93);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (1, '2024-01-10 07:45:00', 1101, 86);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (3, '2024-01-25 09:30:00', 1102, 89);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (5, '2024-01-15 11:00:00', 1103, 78);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (2, '2023-11-10 07:45:00', 1201, 82);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (4, '2023-11-25 09:30:00', 1202, 84);
+INSERT INTO LOGINS (USER_ID, LOGIN_TIMESTAMP, SESSION_ID, SESSION_SCORE) VALUES (6, '2023-11-15 11:00:00', 1203, 80);
+
+
+-- Management wants to know all the users who did not login in the last 5 months
+-- return username
+
+
+select * from users;
+select * from logins;
+
+select current_timestamp();
+
+select user_name from users where user_id in (
+select distinct user_id from (
+select *,timestampdiff(month,last_login,current_timestamp()) as diff from (
+select *,
+first_value(login_timestamp) over (partition by user_id order by login_timestamp desc) last_login
+from logins ) X ) Y
+where diff > 5 );
+
+-- dispaly those users who logged in Jan-2024 and did not log in Nov-2023
+
+select user_id from (
+select user_id,sum(Nov_flg) as Nov,sum(Jan_flg) as Jan from (
+select *,
+case when month = 11 and yr = 2023 then 1 else 0 end as Nov_flg,
+case when month = 1 and yr = 2024 then 1 else 0 end as Jan_flg from (
+select *,month(login_timestamp) as month,year(login_timestamp) as yr
+from logins ) X
+order by user_id asc ) Y
+group by user_id
+having Nov = 0 and Jan > 0 ) U
+;
+
+
