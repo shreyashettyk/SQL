@@ -356,6 +356,31 @@ group by company_id,trans_month ) Y join sectors s
 on Y.company_id = s.company_id;
 
 -- https://www.youtube.com/watch?v=i-0bypiVwp0&list=PLU8R7xIwX9dBmUEBq-rwUSE6n60K6nYrs&index=3
+CREATE TABLE logs (
+    id INT PRIMARY KEY,
+    num INT
+);
+INSERT INTO logs (id, num) VALUES
+(1, 1),
+(2, 1),
+(3, 1),
+(4, 2),
+(5, 1),
+(6, 2),
+(7, 2);
+
+select * from logs;
+
+select count(*) OVER (partition by num) as col1 from logs;
+
+select num from (
+select *,
+case when num = lead_num and lead_num = lag_num then 1 else 0 end as flg from (
+select *,lead(num) over () lead_num,
+lag(num) over () lag_num
+from logs ) X ) Y
+where flg = 1;
+
 -- https://www.youtube.com/watch?v=D-TVx2ZsDvc&list=PLU8R7xIwX9dBmUEBq-rwUSE6n60K6nYrs&index=4
 CREATE TABLE npv (
     id INT,
